@@ -3,13 +3,12 @@ package com.bafbal.greenbay.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Service;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUtil {
@@ -42,14 +41,13 @@ public class JwtUtil {
     return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
   }
 
-  public String generateToken(UserDetails userDetails) {
+  public String generateToken(GreenBayUserDetails greenBayUserDetails) {
     Map<String, Object> claims = new HashMap<>();
-    return createToken(claims, userDetails.getUsername());
+    return createToken(claims, greenBayUserDetails.getId(), greenBayUserDetails.getUsername());
   }
 
-  private String createToken(Map<String, Object> claims, String subject) {
-    return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + 3600000))
-        .signWith(SignatureAlgorithm.HS256, secretKey).compact();
+  private String createToken(Map<String, Object> claims, Long id, String username) {
+    return Jwts.builder().setClaims(claims).setId(Long.toString(id)).claim("name", username).signWith(SignatureAlgorithm.HS256, secretKey)
+        .compact();
   }
 }

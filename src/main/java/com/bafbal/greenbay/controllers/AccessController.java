@@ -26,7 +26,7 @@ public class AccessController {
     this.authenticationService = authenticationService;
   }
 
-  @RequestMapping(path = "/user/login", method = RequestMethod.POST)
+  @RequestMapping(path = "/login", method = RequestMethod.POST)
   public ResponseEntity<?> authenticate(@RequestBody UsernamePasswordDTO usernamePasswordDTO) {
     authenticationService.validateCredentials(usernamePasswordDTO);
     try {

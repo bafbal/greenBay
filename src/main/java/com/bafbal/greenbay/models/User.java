@@ -38,6 +38,10 @@ public class User {
     balance = 0L;
   }
 
+  public Long getId() {
+    return id;
+  }
+
   public String getUsername() {
     return username;
   }
