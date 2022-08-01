@@ -37,4 +37,12 @@ public class User {
     this.password = password;
     balance = 0L;
   }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
 }
