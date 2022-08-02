@@ -49,4 +49,8 @@ public class User {
   public String getPassword() {
     return password;
   }
+
+  public Long getBalance() {
+    return balance;
+  }
 }

@@ -51,4 +51,8 @@ public class GreenBayUserDetails implements UserDetails {
   public Long getId() {
     return user.getId();
   }
+
+  public Long getBalance() {
+    return user.getBalance();
+  }
 }

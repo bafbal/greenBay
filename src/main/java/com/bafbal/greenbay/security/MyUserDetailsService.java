@@ -1,10 +1,10 @@
 package com.bafbal.greenbay.security;
 
+import com.bafbal.greenbay.exceptions.GreenBayUserNotFoundException;
 import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.repositories.UserRepository;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class MyUserDetailsService implements UserDetailsService {
     if (userOptional.isPresent()) {
       return new GreenBayUserDetails(userOptional.get());
     } else {
-      throw new UsernameNotFoundException("no such user exists");
+      throw new GreenBayUserNotFoundException("No such user exists.");
     }
   }
 }

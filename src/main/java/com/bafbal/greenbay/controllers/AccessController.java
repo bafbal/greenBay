@@ -33,9 +33,9 @@ public class AccessController {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(usernamePasswordDTO.getUsername(), usernamePasswordDTO.getPassword()));
     } catch (BadCredentialsException e) {
-      return ResponseEntity.status(400).body(new SimpleErrorDTO("Username or password is incorrect."));
+      return ResponseEntity.status(400).body(new SimpleErrorDTO("Wrong password."));
     }
-    return ResponseEntity.ok(new AuthenticationResponse(authenticationService.getJwtToken(usernamePasswordDTO)));
+    return ResponseEntity.ok(authenticationService.getAuthenticationResponse(usernamePasswordDTO));
   }
 
 }
