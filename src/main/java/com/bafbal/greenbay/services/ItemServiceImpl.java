@@ -1,7 +1,9 @@
 package com.bafbal.greenbay.services;
 
 import com.bafbal.greenbay.dtos.CreateItemDTO;
+import com.bafbal.greenbay.dtos.ListSellableItemsDTO;
 import com.bafbal.greenbay.dtos.SavedItemDTO;
+import com.bafbal.greenbay.exceptions.InValidPageException;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
 import com.bafbal.greenbay.exceptions.UrlNotValidException;
@@ -11,7 +13,11 @@ import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -79,5 +85,28 @@ public class ItemServiceImpl implements ItemService {
     itemRepository.save(item);
     return new SavedItemDTO(item.getId(), item.getItemName(), item.getDescription(), item.getPhotoUrl(), item.getStartPrice(),
         item.getPurchasePrice(), item.getSeller().getId());
+  }
+
+  @Override
+  public List<ListSellableItemsDTO> getListOfItems(Integer page) {
+    page = corrigatePageNumber(page);
+    Pageable pageForQuery = PageRequest.of(page, 2);
+    var a = itemRepository.findAllBySoldIsFalse(pageForQuery);
+    List<ListSellableItemsDTO> listOfSellableItems = new ArrayList<>();
+    for (Item item : a) {
+      listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(),item.getPhotoUrl(),item.getLastBid()));
+    }
+    return listOfSellableItems;
+  }
+
+  private Integer corrigatePageNumber(Integer page) {
+    if (page != null && page < 1) {
+      throw new InValidPageException("Page number must be higher than zero.");
+    }
+    if (page == null) {
+      page = 1;
+    }
+    page--;
+    return page;
   }
 }

@@ -21,6 +21,8 @@ public class Item {
   private String photoUrl;
   private Long startPrice;
   private Long purchasePrice;
+  private Long lastBid;
+  private boolean sold;
 
   @ManyToOne
   @JoinColumn(name = "buyer_id")
@@ -68,5 +70,9 @@ public class Item {
 
   public User getSeller() {
     return seller;
+  }
+
+  public Long getLastBid() {
+    return lastBid;
   }
 }
