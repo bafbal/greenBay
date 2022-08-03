@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS items
 (
     Id                BIGINT AUTO_INCREMENT PRIMARY KEY,
+    item_name         VARCHAR(255) UNIQUE NOT NULL,
     description       VARCHAR(255) UNIQUE NOT NULL,
     photo_url         VARCHAR(255) NOT NULL,
     start_price       BIGINT NOT NULL,

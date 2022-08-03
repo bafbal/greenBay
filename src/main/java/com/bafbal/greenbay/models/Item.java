@@ -16,6 +16,7 @@ public class Item {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  private String itemName;
   private String description;
   private String photoUrl;
   private Long startPrice;
@@ -32,10 +33,40 @@ public class Item {
   public Item() {
   }
 
-  public Item(String description, String photoUrl, Long startPrice, User seller) {
+  public Item(String itemName, String description, String photoUrl, Long startPrice, Long purchasePrice, User seller) {
+    this.itemName = itemName;
     this.description = description;
     this.photoUrl = photoUrl;
     this.startPrice = startPrice;
+    this.purchasePrice = purchasePrice;
     this.seller = seller;
+  }
+
+  public Long getId() {
+    return id;
+  }
+
+  public String getItemName() {
+    return itemName;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public String getPhotoUrl() {
+    return photoUrl;
+  }
+
+  public Long getStartPrice() {
+    return startPrice;
+  }
+
+  public Long getPurchasePrice() {
+    return purchasePrice;
+  }
+
+  public User getSeller() {
+    return seller;
   }
 }
