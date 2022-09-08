@@ -1,7 +1,9 @@
 package com.bafbal.greenbay.security;
 
+import com.bafbal.greenbay.exceptions.InvalidJwtTokenException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,12 +19,15 @@ public class JwtUtil {
   }
 
   public Long extractId(String token) {
-    return Long.parseLong(extractAllClaims(token).get("jti", String.class));
+    return extractAllClaims(token).get("jti", Long.class);
   }
 
   private Claims extractAllClaims(String token) {
-    Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
-    return claims;
+    try {
+      return Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+    } catch (MalformedJwtException e) {
+      throw new InvalidJwtTokenException("Jwt token is invalid.");
+    }
   }
 
   public Boolean validateToken(String token, GreenBayUserDetails userDetails) {

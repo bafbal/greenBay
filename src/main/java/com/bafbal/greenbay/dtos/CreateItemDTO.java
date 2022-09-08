@@ -8,6 +8,14 @@ public class CreateItemDTO {
   private Double startPrice;
   private Double purchasePrice;
 
+  public CreateItemDTO(String itemName, String description, String photoUrl, Double startPrice, Double purchasePrice) {
+    this.itemName = itemName;
+    this.description = description;
+    this.photoUrl = photoUrl;
+    this.startPrice = startPrice;
+    this.purchasePrice = purchasePrice;
+  }
+
   public void setItemName(String itemName) {
     this.itemName = itemName;
   }

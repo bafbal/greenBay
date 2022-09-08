@@ -16,6 +16,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -60,11 +61,11 @@ public class ItemServiceImpl implements ItemService {
 
   private void validatePrices(CreateItemDTO createItemDTO) {
     if (createItemDTO.getPurchasePrice() < 0 || createItemDTO.getStartPrice() < 0) {
-      throw new ItemPriceNotAcceptableException("Price cannot be negative");
+      throw new ItemPriceNotAcceptableException("Price cannot be negative.");
     }
     if (Math.ceil(createItemDTO.getPurchasePrice()) != Math.floor(createItemDTO.getPurchasePrice()) || Math.ceil(createItemDTO.getStartPrice()) != Math.floor(
         createItemDTO.getStartPrice())) {
-      throw new ItemPriceNotAcceptableException("Price must be a whole number");
+      throw new ItemPriceNotAcceptableException("Price must be a whole number.");
     }
   }
 
@@ -72,7 +73,7 @@ public class ItemServiceImpl implements ItemService {
     try {
       URL url = new URL(createItemDTO.getPhotoUrl());
     } catch (MalformedURLException e) {
-      throw new UrlNotValidException("Url is not valid");
+      throw new UrlNotValidException("Url is not valid.");
     }
   }
 
@@ -81,19 +82,19 @@ public class ItemServiceImpl implements ItemService {
     Long sellerId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
     User seller = userRepository.findById(sellerId).get();
     Item item = new Item(createItemDTO.getItemName(), createItemDTO.getDescription(), createItemDTO.getPhotoUrl(),
-        Double.doubleToLongBits(createItemDTO.getStartPrice()), Double.doubleToLongBits(createItemDTO.getPurchasePrice()), seller);
+        Math.round(createItemDTO.getStartPrice()), Math.round(createItemDTO.getPurchasePrice()), seller);
     itemRepository.save(item);
     return new SavedItemDTO(item.getId(), item.getItemName(), item.getDescription(), item.getPhotoUrl(), item.getStartPrice(),
         item.getPurchasePrice(), item.getSeller().getId());
   }
 
   @Override
-  public List<ListSellableItemsDTO> getListOfItems(Integer page) {
-    page = corrigatePageNumber(page);
-    Pageable pageForQuery = PageRequest.of(page, 2);
-    var a = itemRepository.findAllBySoldIsFalse(pageForQuery);
+  public List<ListSellableItemsDTO> getListOfItems(Integer pageNumber) {
+    pageNumber = corrigatePageNumber(pageNumber);
+    Pageable pageForQuery = PageRequest.of(pageNumber, 2);
+    Page<Item> page = itemRepository.findAllBySoldIsFalse(pageForQuery);
     List<ListSellableItemsDTO> listOfSellableItems = new ArrayList<>();
-    for (Item item : a) {
+    for (Item item : page) {
       listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(),item.getPhotoUrl(),item.getLastBid()));
     }
     return listOfSellableItems;
@@ -103,10 +104,6 @@ public class ItemServiceImpl implements ItemService {
     if (page != null && page < 1) {
       throw new InValidPageException("Page number must be higher than zero.");
     }
-    if (page == null) {
-      page = 1;
-    }
-    page--;
-    return page;
+    return page == null ? 0 : page - 1;
   }
 }
