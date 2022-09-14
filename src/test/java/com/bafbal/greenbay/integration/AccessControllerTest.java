@@ -4,6 +4,10 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.bafbal.greenbay.models.User;
+import com.bafbal.greenbay.repositories.UserRepository;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -19,17 +23,13 @@ class AccessControllerTest {
   @Autowired
   private MockMvc mockMvc;
 
-  @Test
-  void authenticate_WhenValidCredentialsGiven_ReturnsToken() throws Exception {
-    String username = "foo";
-    String password = "bar";
-    String body = "{\"username\": \"" + username + "\",\"password\": \"" + password + "\"}";
-    mockMvc.perform(MockMvcRequestBuilders.post("/login")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(body))
-        .andExpect(jsonPath("$.token").exists())
-        .andExpect(jsonPath("$.balance").exists())
-        .andExpect(status().isOk());
+  @Autowired
+  private UserRepository userRepository;
+
+  @BeforeEach
+  void addUserToDB() {
+    userRepository.deleteAll();
+    userRepository.save(new User("foo", "bar"));
   }
 
   @Test

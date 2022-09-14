@@ -11,6 +11,7 @@ import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
+import com.bafbal.greenbay.security.GreenBayUserDetails;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,7 +64,8 @@ public class ItemServiceImpl implements ItemService {
     if (createItemDTO.getPurchasePrice() < 0 || createItemDTO.getStartPrice() < 0) {
       throw new ItemPriceNotAcceptableException("Price cannot be negative.");
     }
-    if (Math.ceil(createItemDTO.getPurchasePrice()) != Math.floor(createItemDTO.getPurchasePrice()) || Math.ceil(createItemDTO.getStartPrice()) != Math.floor(
+    if (Math.ceil(createItemDTO.getPurchasePrice()) != Math.floor(createItemDTO.getPurchasePrice())
+        || Math.ceil(createItemDTO.getStartPrice()) != Math.floor(
         createItemDTO.getStartPrice())) {
       throw new ItemPriceNotAcceptableException("Price must be a whole number.");
     }
@@ -79,8 +81,8 @@ public class ItemServiceImpl implements ItemService {
 
   @Override
   public SavedItemDTO createItem(CreateItemDTO createItemDTO) {
-    Long sellerId = (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    User seller = userRepository.findById(sellerId).get();
+    GreenBayUserDetails userDetails = (GreenBayUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    User seller = userDetails.getUser();
     Item item = new Item(createItemDTO.getItemName(), createItemDTO.getDescription(), createItemDTO.getPhotoUrl(),
         Math.round(createItemDTO.getStartPrice()), Math.round(createItemDTO.getPurchasePrice()), seller);
     itemRepository.save(item);
@@ -95,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
     Page<Item> page = itemRepository.findAllBySoldIsFalse(pageForQuery);
     List<ListSellableItemsDTO> listOfSellableItems = new ArrayList<>();
     for (Item item : page) {
-      listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(),item.getPhotoUrl(),item.getLastBid()));
+      listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(), item.getPhotoUrl(), item.getLastBid()));
     }
     return listOfSellableItems;
   }

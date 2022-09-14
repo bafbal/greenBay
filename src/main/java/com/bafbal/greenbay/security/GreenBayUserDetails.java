@@ -48,6 +48,10 @@ public class GreenBayUserDetails implements UserDetails {
     return true;
   }
 
+  public User getUser() {
+    return user;
+  }
+
   public Long getId() {
     return user.getId();
   }

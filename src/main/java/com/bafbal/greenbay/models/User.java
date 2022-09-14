@@ -38,6 +38,11 @@ public class User {
     balance = 0L;
   }
 
+  public User(Long id, String username, String password) {
+    this(username, password);
+    this.id = id;
+  }
+
   public Long getId() {
     return id;
   }

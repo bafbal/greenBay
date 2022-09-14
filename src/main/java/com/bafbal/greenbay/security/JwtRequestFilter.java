@@ -40,7 +40,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
       GreenBayUserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
       if (jwtUtil.validateToken(jwt, userDetails)) {
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-            new UsernamePasswordAuthenticationToken(userDetails.getId(), null, userDetails.getAuthorities());
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
         usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
       }
