@@ -150,4 +150,55 @@ public class ItemControllerTest {
         .andExpect(jsonPath("message", is("Item purchase price is missing.")))
         .andExpect(status().isBadRequest());
   }
+
+  @Test
+  void createItem_WhenNegativePriceGiven_DisplaysErrorMessage() throws Exception {
+    String itemName = "game";
+    String description = "for kids";
+    String photoUrl = "https://www.linkedin.com/notifications/";
+    String startPrice = "-5.0";
+    String purchasePrice = "10.0";
+    String body = "{\"itemName\": \"" + itemName + "\",\"description\": \"" + description + "\", \"photoUrl\": \"" + photoUrl + "\",\"startPrice\": \"" + startPrice + "\",\"purchasePrice\": \"" + purchasePrice + "\"}";
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/create")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body))
+        .andExpect(jsonPath("message", is("Price cannot be negative.")))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createItem_WhenNotWholeNumberAsPriceGiven_CreatesItem() throws Exception {
+    String itemName = "game";
+    String description = "for kids";
+    String photoUrl = "https://www.linkedin.com/notifications/";
+    String startPrice = "5.5";
+    String purchasePrice = "10.0";
+    String body = "{\"itemName\": \"" + itemName + "\",\"description\": \"" + description + "\", \"photoUrl\": \"" + photoUrl + "\",\"startPrice\": \"" + startPrice + "\",\"purchasePrice\": \"" + purchasePrice + "\"}";
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/create")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body))
+        .andExpect(jsonPath("message", is("Price must be a whole number.")))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void createItem_WhenInvalidUrlGiven_CreatesItem() throws Exception {
+    String itemName = "game";
+    String description = "for kids";
+    String photoUrl = "ht://www.linkedin.com/notifications/";
+    String startPrice = "5.0";
+    String purchasePrice = "10.0";
+    String body = "{\"itemName\": \"" + itemName + "\",\"description\": \"" + description + "\", \"photoUrl\": \"" + photoUrl + "\",\"startPrice\": \"" + startPrice + "\",\"purchasePrice\": \"" + purchasePrice + "\"}";
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/create")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body))
+        .andExpect(jsonPath("message", is("Url is not valid.")))
+        .andExpect(status().isBadRequest());
+  }
 }
