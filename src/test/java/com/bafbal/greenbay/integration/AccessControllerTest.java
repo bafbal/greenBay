@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.bafbal.greenbay.models.User;
+import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,12 @@ class AccessControllerTest {
   @Autowired
   private UserRepository userRepository;
 
+  @Autowired
+  private ItemRepository itemRepository;
+
   @BeforeEach
   void addUserToDB() {
+    itemRepository.deleteAll();
     userRepository.deleteAll();
     userRepository.save(new User("foo", "bar"));
   }
