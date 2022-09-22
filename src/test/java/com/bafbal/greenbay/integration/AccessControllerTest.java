@@ -49,6 +49,7 @@ class AccessControllerTest {
 
   @Test
   void authenticate_WhenPasswordIsMissing_DisplaysErrorMessage() throws Exception {
+    System.out.println();
     String username = "foo";
     String body = "{\"username\": \"" + username + "\"}";
     mockMvc.perform(MockMvcRequestBuilders.post("/login")
