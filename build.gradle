@@ -4,6 +4,10 @@ plugins {
     id 'java'
 }
 
+tasks.jar {
+    enabled = false
+}
+
 jar {
     manifest {
         attributes(
