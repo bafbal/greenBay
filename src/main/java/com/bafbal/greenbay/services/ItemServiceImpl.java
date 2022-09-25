@@ -1,8 +1,11 @@
 package com.bafbal.greenbay.services;
 
 import com.bafbal.greenbay.dtos.CreateItemDTO;
+import com.bafbal.greenbay.dtos.ItemDTO;
 import com.bafbal.greenbay.dtos.ListSellableItemsDTO;
 import com.bafbal.greenbay.dtos.SavedItemDTO;
+import com.bafbal.greenbay.dtos.SellableItemDTO;
+import com.bafbal.greenbay.dtos.SoldItemDTO;
 import com.bafbal.greenbay.exceptions.InValidPageException;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
@@ -16,6 +19,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,11 +33,13 @@ public class ItemServiceImpl implements ItemService {
 
   private ItemRepository itemRepository;
   private UserRepository userRepository;
+  private ModelMapper modelMapper;
 
   @Autowired
-  public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository) {
+  public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, ModelMapper modelMapper) {
     this.itemRepository = itemRepository;
     this.userRepository = userRepository;
+    this.modelMapper = modelMapper;
   }
 
   @Override
@@ -107,5 +114,20 @@ public class ItemServiceImpl implements ItemService {
       throw new InValidPageException("Page number must be higher than zero.");
     }
     return page == null ? 0 : page - 1;
+  }
+
+  @Override
+  public Optional<Item> getItem(Long id) {
+    return itemRepository.findById(id);
+  }
+
+  @Override
+  public ItemDTO getItemDTO(Item item) {
+    if (item.getBuyer() == null) {
+      return modelMapper.map(item, SellableItemDTO.class);
+    } else {
+      SoldItemDTO soldItemDTO = modelMapper.map(item, SoldItemDTO.class);
+      return soldItemDTO;
+    }
   }
 }

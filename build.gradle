@@ -32,6 +32,8 @@ dependencies {
     implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.1'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.3'
     implementation group: 'io.github.cdimascio', name: 'java-dotenv', version: '5.2.2'
+    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.1.0'
+
 
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 

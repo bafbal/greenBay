@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,7 +29,8 @@ public class ItemServiceTest {
 
   ItemRepository itemRepository = Mockito.mock(ItemRepository.class);
   UserRepository userRepository = Mockito.mock(UserRepository.class);
-  ItemService itemService = new ItemServiceImpl(itemRepository, userRepository);
+  ModelMapper modelMapper = Mockito.mock(ModelMapper.class);
+  ItemService itemService = new ItemServiceImpl(itemRepository, userRepository, modelMapper);
 
   private CreateItemDTO okCreateItemDTO;
   private CreateItemDTO createItemDTOWithNullItemName;

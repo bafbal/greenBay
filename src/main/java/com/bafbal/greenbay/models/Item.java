@@ -75,4 +75,8 @@ public class Item {
   public Long getLastBid() {
     return lastBid;
   }
+
+  public User getBuyer() {
+    return buyer;
+  }
 }
