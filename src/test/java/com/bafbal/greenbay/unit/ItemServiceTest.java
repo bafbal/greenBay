@@ -2,12 +2,12 @@ package com.bafbal.greenbay.unit;
 
 import com.bafbal.greenbay.configurations.TestConfiguration;
 import com.bafbal.greenbay.dtos.CreateItemDTO;
-import com.bafbal.greenbay.dtos.SavedItemDTO;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
 import com.bafbal.greenbay.exceptions.UrlNotValidException;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
+import com.bafbal.greenbay.security.MyUserDetailsService;
 import com.bafbal.greenbay.services.ItemService;
 import com.bafbal.greenbay.services.ItemServiceImpl;
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +30,8 @@ public class ItemServiceTest {
   ItemRepository itemRepository = Mockito.mock(ItemRepository.class);
   UserRepository userRepository = Mockito.mock(UserRepository.class);
   ModelMapper modelMapper = Mockito.mock(ModelMapper.class);
-  ItemService itemService = new ItemServiceImpl(itemRepository, userRepository, modelMapper);
+  MyUserDetailsService myUserDetailsService = Mockito.mock(MyUserDetailsService.class);
+  ItemService itemService = new ItemServiceImpl(itemRepository, userRepository, modelMapper, myUserDetailsService);
 
   private CreateItemDTO okCreateItemDTO;
   private CreateItemDTO createItemDTOWithNullItemName;

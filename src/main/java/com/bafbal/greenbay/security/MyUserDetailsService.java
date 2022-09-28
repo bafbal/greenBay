@@ -5,6 +5,7 @@ import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.repositories.UserRepository;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -27,5 +28,10 @@ public class MyUserDetailsService implements UserDetailsService {
     } else {
       throw new GreenBayUserNotFoundException("No such user exists.");
     }
+  }
+
+  public User getLoggedInUser() {
+    GreenBayUserDetails greenBayUserDetails = (GreenBayUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    return greenBayUserDetails.getUser();
   }
 }

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-  Page<Item> findAllBySoldIsFalse(Pageable pageable);
+  Page<Item> findAllByBuyerIsNull(Pageable pageable);
 }

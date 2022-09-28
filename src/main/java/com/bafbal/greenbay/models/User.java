@@ -29,6 +29,9 @@ public class User {
   @OneToMany(mappedBy = "seller")
   private List<Item> listOfSoldItems;
 
+  @OneToMany(mappedBy = "user")
+  private List<Bid> bids;
+
   public User() {
   }
 
@@ -57,5 +60,9 @@ public class User {
 
   public Long getBalance() {
     return balance;
+  }
+
+  public void addToBalance(Long amount) {
+    this.balance += amount;
   }
 }

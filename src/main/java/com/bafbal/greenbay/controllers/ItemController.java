@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -36,11 +37,20 @@ public class ItemController {
 
   @GetMapping({"/view/{id}"})
   public ResponseEntity<?> viewItem(@PathVariable(required = false) Long id) {
-    Optional<Item> item = itemService.getItem(id);
-    if (item.isPresent()) {
-      return ResponseEntity.status(200).body(itemService.getItemDTO(item.get()));
+    Optional<Item> optionalItem = itemService.getItem(id);
+    if (optionalItem.isPresent()) {
+      return ResponseEntity.status(200).body(itemService.getItemDTO(optionalItem.get()));
     } else {
       throw new ItemNotFoundException("Item not found.");
     }
+  }
+
+  @PostMapping("/bid")
+  public ResponseEntity<?> placeBidOnItem(@RequestParam(name = "id") Long itemId, @RequestParam(name = "bid") Long bidToBePlaced) {
+    Optional<Item> optionalItem = itemService.getItem(itemId);
+    itemService.validateBid(optionalItem, bidToBePlaced);
+    Item item = optionalItem.get();
+    itemService.placeBid(item, bidToBePlaced);
+    return ResponseEntity.status(200).body(itemService.getItemDTO(item));
   }
 }

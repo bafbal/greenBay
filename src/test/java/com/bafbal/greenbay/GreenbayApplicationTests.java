@@ -9,5 +9,4 @@ class GreenbayApplicationTests {
   @Test
   void contextLoads() {
   }
-
 }

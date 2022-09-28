@@ -7,14 +7,20 @@ import com.bafbal.greenbay.dtos.SavedItemDTO;
 import com.bafbal.greenbay.dtos.SellableItemDTO;
 import com.bafbal.greenbay.dtos.SoldItemDTO;
 import com.bafbal.greenbay.exceptions.InValidPageException;
+import com.bafbal.greenbay.exceptions.InsufficientBalanceException;
+import com.bafbal.greenbay.exceptions.InvalidBidException;
+import com.bafbal.greenbay.exceptions.ItemAlreadySoldException;
+import com.bafbal.greenbay.exceptions.ItemNotFoundException;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
 import com.bafbal.greenbay.exceptions.UrlNotValidException;
+import com.bafbal.greenbay.models.Bid;
 import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
+import com.bafbal.greenbay.security.MyUserDetailsService;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -34,12 +40,15 @@ public class ItemServiceImpl implements ItemService {
   private ItemRepository itemRepository;
   private UserRepository userRepository;
   private ModelMapper modelMapper;
+  private MyUserDetailsService myUserDetailsService;
 
   @Autowired
-  public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, ModelMapper modelMapper) {
+  public ItemServiceImpl(ItemRepository itemRepository, UserRepository userRepository, ModelMapper modelMapper,
+      MyUserDetailsService myUserDetailsService) {
     this.itemRepository = itemRepository;
     this.userRepository = userRepository;
     this.modelMapper = modelMapper;
+    this.myUserDetailsService = myUserDetailsService;
   }
 
   @Override
@@ -101,10 +110,10 @@ public class ItemServiceImpl implements ItemService {
   public List<ListSellableItemsDTO> getListOfItems(Integer pageNumber) {
     pageNumber = corrigatePageNumber(pageNumber);
     Pageable pageForQuery = PageRequest.of(pageNumber, 2);
-    Page<Item> page = itemRepository.findAllBySoldIsFalse(pageForQuery);
+    Page<Item> page = itemRepository.findAllByBuyerIsNull(pageForQuery);
     List<ListSellableItemsDTO> listOfSellableItems = new ArrayList<>();
     for (Item item : page) {
-      listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(), item.getPhotoUrl(), item.getLastBid()));
+      listOfSellableItems.add(new ListSellableItemsDTO(item.getItemName(), item.getPhotoUrl(), item.getHighestBid()));
     }
     return listOfSellableItems;
   }
@@ -130,4 +139,33 @@ public class ItemServiceImpl implements ItemService {
       return soldItemDTO;
     }
   }
+
+  @Override
+  public void validateBid(Optional<Item> optionalItem, Long bidToBePlaced) {
+    if (optionalItem.isEmpty()) {
+      throw new ItemNotFoundException(("Item not found."));
+    }
+    Item item = optionalItem.get();
+    if (item.getBuyer() != null) {
+      throw new ItemAlreadySoldException("Item already sold.");
+    }
+    if (myUserDetailsService.getLoggedInUser().getBalance() < bidToBePlaced) {
+      throw new InsufficientBalanceException("User balance is insufficient to place such bid.");
+    }
+    if (item.getLastBid() != null && !(bidToBePlaced > item.getLastBid().getPrice()) || bidToBePlaced < item.getStartPrice()) {
+      throw new InvalidBidException("Bid is too low");
+    }
+  }
+
+  @Override
+  public void placeBid(Item item, Long bidToBePlaced) {
+    User userLoggedIn = myUserDetailsService.getLoggedInUser();
+    item.addBid(new Bid(userLoggedIn, bidToBePlaced, item));
+    if (!(item.getPurchasePrice() > bidToBePlaced)) {
+      item.setBuyer(userLoggedIn);
+    }
+    itemRepository.save(item);
+  }
+
+
 }
