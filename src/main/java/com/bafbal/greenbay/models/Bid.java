@@ -50,4 +50,8 @@ public class Bid {
   public void setPrice(Long price) {
     this.price = price;
   }
+
+  public Item getItem() {
+    return item;
+  }
 }

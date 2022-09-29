@@ -33,12 +33,13 @@ public class User {
   private List<Bid> bids;
 
   public User() {
+    balance = 0L;
   }
 
   public User(String username, String password) {
+    this();
     this.username = username;
     this.password = password;
-    balance = 0L;
   }
 
   public User(Long id, String username, String password) {

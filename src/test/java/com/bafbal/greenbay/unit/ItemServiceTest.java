@@ -4,15 +4,21 @@ import com.bafbal.greenbay.configurations.TestConfiguration;
 import com.bafbal.greenbay.dtos.CreateItemDTO;
 import com.bafbal.greenbay.dtos.SellableItemDTO;
 import com.bafbal.greenbay.dtos.SoldItemDTO;
+import com.bafbal.greenbay.exceptions.BidTooLowException;
+import com.bafbal.greenbay.exceptions.InsufficientBalanceException;
+import com.bafbal.greenbay.exceptions.ItemAlreadySoldException;
+import com.bafbal.greenbay.exceptions.ItemNotFoundException;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
 import com.bafbal.greenbay.exceptions.UrlNotValidException;
 import com.bafbal.greenbay.models.Item;
+import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.MyUserDetailsService;
 import com.bafbal.greenbay.services.ItemService;
 import com.bafbal.greenbay.services.ItemServiceImpl;
+import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,6 +55,7 @@ public class ItemServiceTest {
   private CreateItemDTO createItemDTOWithInvalidPhotoUrl;
   private Item sellableItem;
   private Item soldItem;
+  private Item sellableItemWithBid;
 
   @BeforeEach
   public void getModels() {
@@ -65,6 +72,7 @@ public class ItemServiceTest {
     createItemDTOWithInvalidPhotoUrl = beanFactory.getBean("createItemDTOWithInvalidPhotoUrl", CreateItemDTO.class);
     sellableItem = beanFactory.getBean("sellableItem", Item.class);
     soldItem = beanFactory.getBean("soldItem", Item.class);
+    sellableItemWithBid = beanFactory.getBean("sellableItemWithBid", Item.class);
   }
 
   @Test
@@ -172,4 +180,6 @@ public class ItemServiceTest {
     Assertions.assertEquals(1l, soldItemDTO.getSellerId());
     Assertions.assertEquals(1l, soldItemDTO.getBuyerId());
   }
+
+
 }

@@ -5,7 +5,6 @@ import com.bafbal.greenbay.dtos.ItemDTO;
 import com.bafbal.greenbay.dtos.ListSellableItemsDTO;
 import com.bafbal.greenbay.dtos.SavedItemDTO;
 import com.bafbal.greenbay.models.Item;
-import com.bafbal.greenbay.models.User;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,7 +20,5 @@ public interface ItemService {
 
   ItemDTO getItemDTO(Item item);
 
-  void validateBid(Optional<Item> optionalItem, Long price);
-
-  void placeBid(Item item, Long bidToBePlaced);
+  void save(Item item);
 }

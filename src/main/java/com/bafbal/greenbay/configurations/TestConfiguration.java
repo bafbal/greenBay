@@ -2,6 +2,7 @@ package com.bafbal.greenbay.configurations;
 
 import com.bafbal.greenbay.dtos.CreateItemDTO;
 import com.bafbal.greenbay.dtos.UsernamePasswordDTO;
+import com.bafbal.greenbay.models.Bid;
 import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
@@ -130,15 +131,31 @@ public class TestConfiguration {
   @Bean(name = "sellableItem")
   @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
   public Item getSellableItem() {
-    return new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,new User(1l,"foo", "bar"));
+    return new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, new User(1l, "foo", "bar"));
   }
 
   @Bean(name = "soldItem")
   @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
   public Item getSoldItem() {
-    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,new User(1l,"foo", "bar"));
+    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, new User(1l, "foo", "bar"));
     item.setBuyer(new User("John", "Doe"));
     return item;
+  }
+
+  @Bean(name = "sellableItemWithBid")
+  @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public Item getSellableItemWithBid() {
+    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, new User(1l, "foo", "bar"));
+    item.addBid(new Bid(new User(), 8l, item));
+    return item;
+  }
+
+  @Bean(name = "userWithBalance")
+  @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public User getEmptyUser() {
+    User user = new User();
+    user.addToBalance(200l);
+    return user;
   }
 
 }

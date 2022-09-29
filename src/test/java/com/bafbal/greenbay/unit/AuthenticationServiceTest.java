@@ -5,6 +5,10 @@ import com.bafbal.greenbay.dtos.AuthenticateResponseDTO;
 import com.bafbal.greenbay.dtos.UsernamePasswordDTO;
 import com.bafbal.greenbay.exceptions.GreenBayUserNotFoundException;
 import com.bafbal.greenbay.exceptions.MissingCredentialsException;
+import com.bafbal.greenbay.models.User;
+import com.bafbal.greenbay.repositories.BidRepository;
+import com.bafbal.greenbay.repositories.ItemRepository;
+import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
 import com.bafbal.greenbay.security.JwtUtil;
 import com.bafbal.greenbay.security.MyUserDetailsService;
@@ -25,6 +29,15 @@ public class AuthenticationServiceTest {
 
   @Autowired
   private BeanFactory beanFactory;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @Autowired
+  private ItemRepository itemRepository;
+
+  @Autowired
+  private BidRepository bidRepository;
 
   private JwtUtil jwtUtil = Mockito.mock(JwtUtil.class);
   private MyUserDetailsService myUserDetailsService = Mockito.mock(MyUserDetailsService.class);
@@ -53,6 +66,14 @@ public class AuthenticationServiceTest {
         UsernamePasswordDTO.class);
     fooBarGreenBayUserDetails = beanFactory.getBean("fooBarGreenBayUserDetails",
         GreenBayUserDetails.class);
+  }
+
+  @BeforeEach
+  void addUserToDB() {
+    bidRepository.deleteAll();
+    itemRepository.deleteAll();
+    userRepository.deleteAll();
+    userRepository.save(new User("foo", "bar"));
   }
 
   @Test

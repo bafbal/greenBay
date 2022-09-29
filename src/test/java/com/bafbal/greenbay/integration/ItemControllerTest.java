@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.models.User;
+import com.bafbal.greenbay.repositories.BidRepository;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
@@ -43,6 +44,9 @@ public class ItemControllerTest {
   private ItemRepository itemRepository;
 
   @Autowired
+  private BidRepository bidRepository;
+
+  @Autowired
   private JwtUtil jwtUtil;
 
   private String token;
@@ -50,6 +54,7 @@ public class ItemControllerTest {
 
   @BeforeEach
   public void prepareDbAndToken() {
+    bidRepository.deleteAll();
     itemRepository.deleteAll();
     userRepository.deleteAll();
     User user1 = new User("foo", "bar");
@@ -60,13 +65,10 @@ public class ItemControllerTest {
     itemRepository.save(new Item("second item", "second item description", "https://www.seconditem.com", 2l, 4l, user1));
     itemRepository.save(new Item("third item", "third item description", "https://www.thirditem.com", 3l, 6l, user1));
     itemRepository.save(new Item("fourth item", "fourth item description", "https://www.fourthitem.com", 4l, 8l, user1));
-    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,user1);
+    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, user1);
     item.setBuyer(user2);
     itemRepository.save(item);
 
-//    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
-//    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
-//    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
     GreenBayUserDetails userDetails = new GreenBayUserDetails(userRepository.findByUsername("foo").get());
     SecurityContextHolder.getContext()
         .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
@@ -337,5 +339,108 @@ public class ItemControllerTest {
         .andExpect(jsonPath("purchasePrice", is(10)))
         .andExpect(jsonPath("sellerId", is(userRepository.findByUsername("foo").get().getId().intValue())))
         .andExpect(jsonPath("buyerId", is(userRepository.findByUsername("John").get().getId().intValue())));
+  }
+
+  @Test
+  void placeBidOnItem_WhenItemWithGivenIdDoesNotExist_DisplayErrorMessage() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + Long.MAX_VALUE + "&bid=1")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("Item not found.")));
+  }
+
+  @Test
+  void placeBidOnItem_WhenItemIsAlreadySold_DisplayErrorMessage() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("game").get().getId() + "&bid=1")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("Item already sold.")));
+  }
+
+  @Test
+  void placeBidOnItem_WhenUserBalanceIsLowerThanBid_DisplayErrorMessage() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("first item").get().getId() + "&bid=1")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("User balance is insufficient to place such bid.")));
+  }
+
+  @Test
+  void placeBidOnItem_WhenBidIsLowerThanStartPrice_DisplayErrorMessage() throws Exception {
+    User user = userRepository.findByUsername("foo").get();
+    user.addToBalance(200l);
+    userRepository.save(user);
+    GreenBayUserDetails userDetails = new GreenBayUserDetails(userRepository.findByUsername("foo").get());
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("third item").get().getId() + "&bid=1")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("Bid is too low")));
+  }
+
+  @Test
+  void placeBidOnItem_WhenBidIsNotHigherThanLastBid_DisplayErrorMessage() throws Exception {
+    User user = userRepository.findByUsername("foo").get();
+    user.addToBalance(200l);
+    userRepository.save(user);
+    GreenBayUserDetails userDetails = new GreenBayUserDetails(userRepository.findByUsername("foo").get());
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("third item").get().getId() + "&bid=5")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON));
+
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("third item").get().getId() + "&bid=4")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("Bid is too low")));
+  }
+
+  @Test
+  void placeBidOnItem_WhenProperBidIsMadeThatIsLowerThanPurchasePrice_DisplayItemDetails() throws Exception {
+    User user = userRepository.findByUsername("foo").get();
+    user.addToBalance(200l);
+    userRepository.save(user);
+    GreenBayUserDetails userDetails = new GreenBayUserDetails(userRepository.findByUsername("foo").get());
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("third item").get().getId() + "&bid=5")
+        .header("Authorization", "Bearer " + token)
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(200))
+        .andExpect(jsonPath("itemName", is("third item")))
+        .andExpect(jsonPath("description", is("third item description")))
+        .andExpect(jsonPath("photoUrl", is("https://www.thirditem.com")))
+        .andExpect(jsonPath("startPrice", is(3)))
+        .andExpect(jsonPath("purchasePrice", is(6)))
+        .andExpect(jsonPath("sellerId", is(userRepository.findByUsername("foo").get().getId().intValue())));
+  }
+
+  @Test
+  void placeBidOnItem_WhenProperBidIsMadeThatMatchesPurchasePrice_DisplayItemDetails() throws Exception {
+    User user = userRepository.findByUsername("foo").get();
+    user.addToBalance(200l);
+    userRepository.save(user);
+    GreenBayUserDetails userDetails = new GreenBayUserDetails(userRepository.findByUsername("foo").get());
+    SecurityContextHolder.getContext()
+        .setAuthentication(new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities()));
+    mockMvc.perform(MockMvcRequestBuilders.post("/bid?id=" + itemRepository.findByItemName("third item").get().getId() + "&bid=6")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(200))
+        .andExpect(jsonPath("itemName", is("third item")))
+        .andExpect(jsonPath("description", is("third item description")))
+        .andExpect(jsonPath("photoUrl", is("https://www.thirditem.com")))
+        .andExpect(jsonPath("startPrice", is(3)))
+        .andExpect(jsonPath("purchasePrice", is(6)))
+        .andExpect(jsonPath("sellerId", is(userRepository.findByUsername("foo").get().getId().intValue())))
+        .andExpect(jsonPath("buyerId", is(userRepository.findByUsername("foo").get().getId().intValue())));;
   }
 }
