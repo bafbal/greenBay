@@ -7,6 +7,12 @@ public class SoldItemDTO extends ItemDTO {
   public SoldItemDTO() {
   }
 
+  public SoldItemDTO(String itemName, String description, String photoUrl, Long startPrice, Long purchasePrice, Long sellerId,
+      Long buyerId) {
+    super(itemName, description, photoUrl, startPrice, purchasePrice, sellerId);
+    this.buyerId = buyerId;
+  }
+
   public Long getBuyerId() {
 
     return buyerId;

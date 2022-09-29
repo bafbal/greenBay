@@ -2,6 +2,7 @@ package com.bafbal.greenbay.configurations;
 
 import com.bafbal.greenbay.dtos.CreateItemDTO;
 import com.bafbal.greenbay.dtos.UsernamePasswordDTO;
+import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.models.User;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -124,6 +125,20 @@ public class TestConfiguration {
   @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
   public CreateItemDTO getCreateItemDTOWithInvalidPhotoUrl() {
     return new CreateItemDTO("game", "for kids", "ht://ww.linkedin.com/notifications/", 5.0, 10.0);
+  }
+
+  @Bean(name = "sellableItem")
+  @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public Item getSellableItem() {
+    return new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,new User(1l,"foo", "bar"));
+  }
+
+  @Bean(name = "soldItem")
+  @Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+  public Item getSoldItem() {
+    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,new User(1l,"foo", "bar"));
+    item.setBuyer(new User("John", "Doe"));
+    return item;
   }
 
 }

@@ -9,6 +9,17 @@ public class ItemDTO {
   private Long purchasePrice;
   private Long sellerId;
 
+  public ItemDTO() {
+  }
+
+  public ItemDTO(String itemName, String description, String photoUrl, Long startPrice, Long purchasePrice, Long sellerId) {
+    this.itemName = itemName;
+    this.description = description;
+    this.photoUrl = photoUrl;
+    this.startPrice = startPrice;
+    this.purchasePrice = purchasePrice;
+    this.sellerId = sellerId;
+  }
 
   public String getItemName() {
     return itemName;

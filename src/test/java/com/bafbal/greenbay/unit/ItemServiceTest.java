@@ -2,9 +2,12 @@ package com.bafbal.greenbay.unit;
 
 import com.bafbal.greenbay.configurations.TestConfiguration;
 import com.bafbal.greenbay.dtos.CreateItemDTO;
+import com.bafbal.greenbay.dtos.SellableItemDTO;
+import com.bafbal.greenbay.dtos.SoldItemDTO;
 import com.bafbal.greenbay.exceptions.ItemPriceNotAcceptableException;
 import com.bafbal.greenbay.exceptions.MissingItemDetailException;
 import com.bafbal.greenbay.exceptions.UrlNotValidException;
+import com.bafbal.greenbay.models.Item;
 import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.MyUserDetailsService;
@@ -44,6 +47,8 @@ public class ItemServiceTest {
   private CreateItemDTO createItemDTOWithNotWholeStartPrice;
   private CreateItemDTO createItemDTOWithNotWholePurchasePrice;
   private CreateItemDTO createItemDTOWithInvalidPhotoUrl;
+  private Item sellableItem;
+  private Item soldItem;
 
   @BeforeEach
   public void getModels() {
@@ -58,6 +63,8 @@ public class ItemServiceTest {
     createItemDTOWithNotWholeStartPrice = beanFactory.getBean("createItemDTOWithNotWholeStartPrice", CreateItemDTO.class);
     createItemDTOWithNotWholePurchasePrice = beanFactory.getBean("createItemDTOWithNotWholePurchasePrice", CreateItemDTO.class);
     createItemDTOWithInvalidPhotoUrl = beanFactory.getBean("createItemDTOWithInvalidPhotoUrl", CreateItemDTO.class);
+    sellableItem = beanFactory.getBean("sellableItem", Item.class);
+    soldItem = beanFactory.getBean("soldItem", Item.class);
   }
 
   @Test
@@ -133,5 +140,36 @@ public class ItemServiceTest {
     Throwable exception = Assertions.assertThrows(UrlNotValidException.class,
         () -> itemService.validateCreateItemDTO(createItemDTOWithInvalidPhotoUrl));
     Assertions.assertEquals("Url is not valid.", exception.getMessage());
+  }
+
+  @Test
+  public void getItemDTO_IfItemIsSellable_ReturnsProperDTO() {
+    Mockito.when(modelMapper.map(sellableItem, SellableItemDTO.class))
+        .thenReturn(new SellableItemDTO("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, 1l));
+
+    SellableItemDTO sellableItemDTO = (SellableItemDTO) itemService.getItemDTO(sellableItem);
+
+    Assertions.assertEquals("game", sellableItemDTO.getItemName());
+    Assertions.assertEquals("for kids", sellableItemDTO.getDescription());
+    Assertions.assertEquals("https://www.linkedin.com/notifications/", sellableItemDTO.getPhotoUrl());
+    Assertions.assertEquals(5l, sellableItemDTO.getStartPrice());
+    Assertions.assertEquals(10l, sellableItemDTO.getPurchasePrice());
+    Assertions.assertEquals(1l, sellableItemDTO.getSellerId());
+  }
+
+  @Test
+  public void getItemDTO_IfItemIsSold_ReturnsProperDTO() {
+    Mockito.when(modelMapper.map(soldItem, SoldItemDTO.class))
+        .thenReturn(new SoldItemDTO("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l, 1l, 1l));
+
+    SoldItemDTO soldItemDTO = (SoldItemDTO) itemService.getItemDTO(soldItem);
+
+    Assertions.assertEquals("game", soldItemDTO.getItemName());
+    Assertions.assertEquals("for kids", soldItemDTO.getDescription());
+    Assertions.assertEquals("https://www.linkedin.com/notifications/", soldItemDTO.getPhotoUrl());
+    Assertions.assertEquals(5l, soldItemDTO.getStartPrice());
+    Assertions.assertEquals(10l, soldItemDTO.getPurchasePrice());
+    Assertions.assertEquals(1l, soldItemDTO.getSellerId());
+    Assertions.assertEquals(1l, soldItemDTO.getBuyerId());
   }
 }

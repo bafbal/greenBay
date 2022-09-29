@@ -12,11 +12,9 @@ import com.bafbal.greenbay.repositories.ItemRepository;
 import com.bafbal.greenbay.repositories.UserRepository;
 import com.bafbal.greenbay.security.GreenBayUserDetails;
 import com.bafbal.greenbay.security.JwtUtil;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +31,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 public class ItemControllerTest {
 
   @Autowired
+  private BeanFactory beanFactory;
+
+  @Autowired
   private MockMvc mockMvc;
 
   @Autowired
@@ -45,17 +46,24 @@ public class ItemControllerTest {
   private JwtUtil jwtUtil;
 
   private String token;
+  private Item soldItem;
 
   @BeforeEach
   public void prepareDbAndToken() {
     itemRepository.deleteAll();
     userRepository.deleteAll();
-    User user = new User("foo", "bar");
-    userRepository.save(user);
-    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l, user));
-    itemRepository.save(new Item("second item", "second item description", "https://www.seconditem.com", 2l, 4l, user));
-    itemRepository.save(new Item("third item", "third item description", "https://www.thirditem.com", 3l, 6l, user));
-    itemRepository.save(new Item("fourth item", "fourth item description", "https://www.fourthitem.com", 4l, 8l, user));
+    User user1 = new User("foo", "bar");
+    User user2 = new User("John", "Doe");
+    userRepository.save(user1);
+    userRepository.save(user2);
+    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l, user1));
+    itemRepository.save(new Item("second item", "second item description", "https://www.seconditem.com", 2l, 4l, user1));
+    itemRepository.save(new Item("third item", "third item description", "https://www.thirditem.com", 3l, 6l, user1));
+    itemRepository.save(new Item("fourth item", "fourth item description", "https://www.fourthitem.com", 4l, 8l, user1));
+    Item item = new Item("game", "for kids", "https://www.linkedin.com/notifications/", 5l, 10l,user1);
+    item.setBuyer(user2);
+    itemRepository.save(item);
+
 //    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
 //    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
 //    itemRepository.save(new Item("first item", "first item description", "https://www.firstitem.com", 1l, 2l,user));
@@ -291,5 +299,43 @@ public class ItemControllerTest {
             .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is(200))
         .andExpect(jsonPath("$", hasSize(0)));
+  }
+
+  @Test
+  void viewItem_WhenNotExistingIdIsGiven_ErrorMessageDisplayed() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/view/4008")
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(400))
+        .andExpect(jsonPath("message", is("Item not found.")));
+  }
+
+  @Test
+  void viewItem_WhenIdOfSellableItemIsGiven_ItemDetailsDisplayed() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/view/" + itemRepository.findByItemName("first item").get().getId())
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(200))
+        .andExpect(jsonPath("itemName", is("first item")))
+        .andExpect(jsonPath("description", is("first item description")))
+        .andExpect(jsonPath("photoUrl", is("https://www.firstitem.com")))
+        .andExpect(jsonPath("startPrice", is(1)))
+        .andExpect(jsonPath("purchasePrice", is(2)))
+        .andExpect(jsonPath("sellerId", is(userRepository.findByUsername("foo").get().getId().intValue())));
+  }
+
+  @Test
+  void viewItem_WhenIdOfSoldItemIsGiven_ItemDetailsDisplayed() throws Exception {
+    mockMvc.perform(MockMvcRequestBuilders.get("/view/" + itemRepository.findByItemName("game").get().getId())
+            .header("Authorization", "Bearer " + token)
+            .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is(200))
+        .andExpect(jsonPath("itemName", is("game")))
+        .andExpect(jsonPath("description", is("for kids")))
+        .andExpect(jsonPath("photoUrl", is("https://www.linkedin.com/notifications/")))
+        .andExpect(jsonPath("startPrice", is(5)))
+        .andExpect(jsonPath("purchasePrice", is(10)))
+        .andExpect(jsonPath("sellerId", is(userRepository.findByUsername("foo").get().getId().intValue())))
+        .andExpect(jsonPath("buyerId", is(userRepository.findByUsername("John").get().getId().intValue())));
   }
 }

@@ -135,8 +135,7 @@ public class ItemServiceImpl implements ItemService {
     if (item.getBuyer() == null) {
       return modelMapper.map(item, SellableItemDTO.class);
     } else {
-      SoldItemDTO soldItemDTO = modelMapper.map(item, SoldItemDTO.class);
-      return soldItemDTO;
+      return modelMapper.map(item, SoldItemDTO.class);
     }
   }
 

@@ -26,9 +26,9 @@ public class GreenbayApplication implements CommandLineRunner {
 
   @Override
   public void run(String... args) throws Exception {
-    User user = new User("foo", "bar");
-    user.addToBalance(100l);
-    userRepository.save(user);
+//    User user = new User("foo", "bar");
+//    user.addToBalance(100l);
+//    userRepository.save(user);
   }
 
   @Bean
